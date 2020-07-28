@@ -1,0 +1,58 @@
+<h2 class= "text-center mt-4"><%= @event.title %></h2>
+<div class="container">
+<div class="row justify-content-md-center">
+    <div class="col-8 mt-4">
+        <div class="card text-center shadow mb-5 bg-white rounded">
+         
+          <div class="card-body">
+            <div class="card-text text-center"><%= simple_format(@event.description) %></div>
+            <p class="card-text"><strong>Start: </strong><%= @event.start.strftime('%m/%d/%y %I:%M %p')%></p>
+            <p class="card-text"><strong>End: </strong><%= @event.end.strftime('%m/%d/%y %I:%M %p')%></p>
+            <p class="card-text"><strong>Address: </strong><%= truncate(@event.address, length: 100) %></p>
+            <p class="card-text"><strong>How many people will attend this coming event? : </strong><%= pluralize(@event.users.count, "attendee") %></p>
+            
+            <% if user_signed_in? && (@event.user_id == current_user.id) %>
+              <%= link_to "You're the organizer of this event", event_path, :class => 'btn btn-outline-success'  %>
+            <% end %>
+           
+            <% if user_signed_in? && (@event.user_id != current_user.id) %>
+            <% unless Rsvp.exists?(event: @event.id, user: @event.user.id = current_user.id) %>
+              <div class="rsvp mt-2"><%= button_to "Attend", rsvps_event_path(@event), class: "btn btn-outline-success" %></div>
+              <% else %>
+              <%= link_to "You're going!", event_path, :class => 'btn btn-outline-success'  %>
+            <% end %>
+            <% end %>
+
+            <% if user_signed_in? %>
+            <% link_to " ", event_path, :class => 'btn btn-outline-success'  %>
+            <% else %>
+            <%= link_to "Join Events!", new_user_registration_path, :class => 'btn btn-outline-success'  %>
+            <% end %>
+
+
+            
+            <div class="map mt-4 mb-4"><%= image_tag "http://maps.googleapis.com/maps/api/staticmap?center=#{@event.latitude},#{@event.longitude}&markers=#{@event.latitude},#{@event.longitude}&zoom=12&size=450x400&sensor=false&key=AIzaSyD-rwNYF7BhFWgCNCmuZHEn1JEqkjlcfMY",
+              class: 'img-fluid img-rounded', alt: "#{@event} on the map"%>
+            </div>
+
+            <div class="row justify-content-md-center">
+            <ol>
+            <p><strong>This event is organized by: </strong><%= truncate(@event.user.name, length: 100) %></p>
+            <p><strong>Name list of attendee</strong></p>
+            <% @event.users.sort.each do |user| %>
+             <li> <%= user.name %> </li>
+            <% end %>
+            </ol>
+            </div>
+
+            <% if user_signed_in? && (@event.user == current_user || current_user.admin?) %>
+            <%=link_to "Edit", edit_event_path(@event), class: "btn btn-outline-info" %>
+            <%=link_to "Delete", event_path(@event), class: "btn btn-outline-danger", method: :delete, data: {confirm: "Are you sure?"} %>
+            <% end %>
+            <%=link_to "Back", events_path(@events), class: "btn btn-outline-secondary" %>
+        
+          </div>
+        </div>
+    </div>
+    </div>
+</div>
